@@ -18,6 +18,26 @@
     id, owner, name, start_date, end_date, cost, description, create_time, create_by, 
     edit_time, edit_by
   </sql>
+
+  <!-- 条件分页查询 -->
+  <select id="selectAllByPage" parameterType="com.myself.crm.vo.ActivityPage" resultMap="BaseResultMap">
+    select a.id, u.name as owner, a.name, a.start_date, a.end_date, a.cost, a.description, a.create_time, a.create_by,
+    a.edit_time, a.edit_by from tbl_activity a,tbl_user u where a.owner = u.id
+    <if test="queryOwner != null and queryOwner != ''">
+      and u.name like '%' #{queryOwner} '%'
+    </if>
+    <if test="queryName != null and queryName != ''">
+      and a.name like '%' #{queryName} '%'
+    </if>
+    <if test="queryStartDate != null and queryStartDate != ''">
+      and a.start_date &gt;=  #{queryStartDate}
+    </if>
+    <if test="queryEndDate != null and queryEndDate != ''">
+      and a.end_date &lt;=  #{queryEndDate}
+    </if>
+    order by a.create_time desc
+  </select>
+
   <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
     select 
     <include refid="Base_Column_List" />

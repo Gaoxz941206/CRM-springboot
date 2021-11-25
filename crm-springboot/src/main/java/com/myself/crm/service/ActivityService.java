@@ -1,6 +1,8 @@
 package com.myself.crm.service;
 
+import com.github.pagehelper.PageInfo;
 import com.myself.crm.model.Activity;
+import com.myself.crm.vo.ActivityPage;
 
 /**
  * @Author Gaoxz
@@ -9,4 +11,6 @@ import com.myself.crm.model.Activity;
  */
 public interface ActivityService {
     int addActivity(Activity activity, String createBy);
+
+    PageInfo<Activity> selectAllByPage(ActivityPage activityPage);
 }

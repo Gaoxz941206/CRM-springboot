@@ -1,6 +1,9 @@
 package com.myself.crm.mapper;
 
 import com.myself.crm.model.Activity;
+import com.myself.crm.vo.ActivityPage;
+
+import java.util.List;
 
 public interface ActivityMapper {
     int deleteByPrimaryKey(String id);
@@ -14,4 +17,6 @@ public interface ActivityMapper {
     int updateByPrimaryKeySelective(Activity record);
 
     int updateByPrimaryKey(Activity record);
+
+    List<Activity> selectAllByPage(ActivityPage activityPage);
 }

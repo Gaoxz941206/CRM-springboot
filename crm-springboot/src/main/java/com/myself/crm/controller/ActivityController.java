@@ -1,8 +1,10 @@
 package com.myself.crm.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.myself.crm.model.Activity;
 import com.myself.crm.model.User;
 import com.myself.crm.service.ActivityService;
+import com.myself.crm.vo.ActivityPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,4 +31,9 @@ public class ActivityController {
         return activityService.addActivity(activity,user.getId()) == 1;
     }
 
+    @RequestMapping("/pageQuery")
+    @ResponseBody
+    public PageInfo<Activity> pageQuery(ActivityPage activityPage){
+        return activityService.selectAllByPage(activityPage);
+    }
 }
