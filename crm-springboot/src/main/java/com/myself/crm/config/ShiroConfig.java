@@ -41,6 +41,7 @@ public class ShiroConfig {
         map.put("/logout","logout");
         map.put("/jquery/**","anon");
         map.put("/image/**","anon");
+        map.put("/favicon.ico","anon");
         map.put("/**","authc");
         factoryBean.setFilterChainDefinitionMap(map);
         return factoryBean;

@@ -8,12 +8,17 @@
 					 ${#request.getServletContext()}+'/'}">
 <link th:href="@{/jquery/bootstrap_3.3.0/css/bootstrap.min.css}" type="text/css" rel="stylesheet" />
 <link th:href="@{/jquery/bootstrap-datetimepicker-master/css/bootstrap-datetimepicker.min.css}" type="text/css" rel="stylesheet" />
-
+	<link th:href="@{/jquery/bs_pagination/jquery.bs_pagination.min.css}" type="text/css" rel="stylesheet" />
 <script type="text/javascript" th:src="@{/jquery/jquery-1.11.1-min.js}"></script>
 <script type="text/javascript" th:src="@{/jquery/bootstrap_3.3.0/js/bootstrap.min.js}"></script>
 <script type="text/javascript" th:src="@{/jquery/bootstrap-datetimepicker-master/js/bootstrap-datetimepicker.js}"></script>
 <script type="text/javascript" th:src="@{/jquery/bootstrap-datetimepicker-master/locale/bootstrap-datetimepicker.zh-CN.js}"></script>
+	<!-- 引入分页插件 -->
+	<!--<link th:href="@{/jquery/bs_pagination/jquery.bs_pagination.min.css}" type="text/css" rel="stylesheet" />-->
+	<script type="text/javascript" th:src="@{/jquery/bs_pagination/jquery.bs_pagination.min.js}"></script>
+	<script type="text/javascript" th:src="@{/jquery/bs_pagination/en.js}"></script>
 
+<script type="text/javascript" th:src="@{/jquery/verifyNotNull.js}"></script>
 <script type="text/javascript" th:inline="javascript">
 
 	$(function(){
@@ -31,6 +36,10 @@
 			queryAllUser();
 			$("#createActivityModal").modal("show");
 		});
+		//点击保存按钮创建市场活动
+		$("#addActivityBtn").click(function () {
+			createActivity();
+		})
 	});
 
 	//将用户列表添加到创建市场活动模态窗口的下拉项
@@ -53,6 +62,83 @@
 
 	//创建市场活动
 	function createActivity() {
+		var owner = $.trim($("#create-marketActivityOwner").val());
+		var name = $.trim($("#create-marketActivityName").val());
+		if(!verifyNotNull(owner)){
+			alert("所有者不能为空");
+			return;
+		}
+		if(!verifyNotNull(name)){
+			alert("名称不能为空");
+			return;
+		}
+		$.ajax({
+			url:"/activity/add",
+			data:$("#addActivityForm").serialize(),
+			type:"post",
+			dataType: "text",
+			success:function (resp) {
+				if(resp){
+					alert("添加市场活动成功");
+					$("#addActivityForm")[0].reset();
+					$("#createActivityModal").modal("hide");
+				}else {
+					alert("添加市场活动失败");
+				}
+			}
+		});
+	}
+
+	//条件分页查询
+	function pageQuery(pageNo,pageSize) {
+		var queryName = $.trim($("#queryName").val());
+		var queryOwner = $.trim($("#queryOwner").val());
+		var queryStartDate = $.trim($("#queryStartDate").val());
+		var queryEndDate = $.trim($("#queryEndDate").val());
+		$.ajax({
+			url:"/activity/pageQuery",
+			data:{
+				queryName:queryName,
+				queryOwner:queryOwner,
+				queryStartDate:queryStartDate,
+				queryEndDate:queryEndDate,
+				pageNo:pageNo,
+				pageSize:pageSize
+			},
+			type:"get",
+			dataType:"json",
+			success:function (resp) {
+				var html = "";
+				$("#activityBody").html(html);
+				$.each(resp.list,function (i,n) {
+					html += '<tr class="active">';
+					html +=     '<td><input type="checkbox" /></td>';
+					html +=     '<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href=\'detail.html\';">'+n.name+'</a></td>';
+					html +=     '<td>'+n.owner+'</td>';
+					html +=     '<td>'+n.startDate+'</td>';
+					html +=     '<td>'+n.endDate+'</td>';
+					html += '</tr>';
+				});
+				$("#activityBody").html(html);
+				$("#activityPage").bs_pagination({
+					currentPage:pageNo, //当前页
+					rowsPerPage:pageSize,   //每页条数
+					maxRowsPerPage: 20,     //每页最多显示条数
+					totalPages:resp.pages,  //总页数
+					totalRows:total,    //总条数
+					visiblePageLinks: 3,    //显示卡片数量
+					showGoToPage: true,    //每页最多显示条数
+					showRowsPerPage: true,  //每页最多显示条数
+					showRowsInfo: true,     //每页最多显示条数
+					showRowsDefaultInfo: true,  //每页最多显示条数
+
+					//回调函数，点击分页组件时出发
+					onchange:function (event,data) {
+						pageQuery(data.currentPage,data.rowsPerPage);
+					}
+				});
+			}
+		})
 
 	}
 	
@@ -72,42 +158,42 @@
 				</div>
 				<div class="modal-body">
 				
-					<form class="form-horizontal" role="form">
+					<form id="addActivityForm" class="form-horizontal" role="form">
 					
 						<div class="form-group">
 							<label for="create-marketActivityOwner" class="col-sm-2 control-label">所有者<span style="font-size: 15px; color: red;">*</span></label>
 							<div class="col-sm-10" style="width: 300px;">
-								<select class="form-control" id="create-marketActivityOwner">
+								<select class="form-control" name="owner" id="create-marketActivityOwner">
 
 								</select>
 							</div>
                             <label for="create-marketActivityName" class="col-sm-2 control-label">名称<span style="font-size: 15px; color: red;">*</span></label>
                             <div class="col-sm-10" style="width: 300px;">
-                                <input type="text" class="form-control" id="create-marketActivityName">
+                                <input type="text" class="form-control" name="name" id="create-marketActivityName">
                             </div>
 						</div>
 						
 						<div class="form-group">
 							<label for="create-startTime" class="col-sm-2 control-label">开始日期</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<input type="text" class="form-control time" id="create-startTime">
+								<input type="text" class="form-control time" name="startDate" id="create-startTime">
 							</div>
 							<label for="create-endTime" class="col-sm-2 control-label">结束日期</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<input type="text" class="form-control time" id="create-endTime">
+								<input type="text" class="form-control time" name="endDate" id="create-endTime">
 							</div>
 						</div>
                         <div class="form-group">
 
                             <label for="create-cost" class="col-sm-2 control-label">成本</label>
                             <div class="col-sm-10" style="width: 300px;">
-                                <input type="text" class="form-control" id="create-cost">
+                                <input type="text" class="form-control" name="cost" id="create-cost">
                             </div>
                         </div>
 						<div class="form-group">
 							<label for="create-describe" class="col-sm-2 control-label">描述</label>
 							<div class="col-sm-10" style="width: 81%;">
-								<textarea class="form-control" rows="3" id="create-describe"></textarea>
+								<textarea class="form-control" rows="3" name="description" id="create-describe"></textarea>
 							</div>
 						</div>
 						
@@ -116,7 +202,7 @@
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-					<button type="button" class="btn btn-primary" data-dismiss="modal">保存</button>
+					<button id="addActivityBtn" type="button" class="btn btn-primary">保存</button>
 				</div>
 			</div>
 		</div>
@@ -186,9 +272,7 @@
 			</div>
 		</div>
 	</div>
-	
-	
-	
+
 	
 	<div>
 		<div style="position: relative; left: 10px; top: -10px;">
@@ -201,19 +285,18 @@
 		<div style="width: 100%; position: absolute;top: 5px; left: 10px;">
 		
 			<div class="btn-toolbar" role="toolbar" style="height: 80px;">
-				<form class="form-inline" role="form" style="position: relative;top: 8%; left: 5px;">
-				  
+				<form id="queryForm" class="form-inline" role="form" style="position: relative;top: 8%; left: 5px;">
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">名称</div>
-				      <input class="form-control" type="text">
+				      <input class="form-control" id="queryName" type="text">
 				    </div>
 				  </div>
 				  
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">所有者</div>
-				      <input class="form-control" type="text">
+				      <input class="form-control" id="queryOwner" type="text">
 				    </div>
 				  </div>
 
@@ -221,17 +304,17 @@
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">开始日期</div>
-					  <input class="form-control" type="text" id="startTime" />
+					  <input class="form-control" type="text" id="queryStartDate">
 				    </div>
 				  </div>
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">结束日期</div>
-					  <input class="form-control" type="text" id="endTime">
+					  <input class="form-control" type="text" id="queryEndDate">
 				    </div>
 				  </div>
 				  
-				  <button type="submit" class="btn btn-default">查询</button>
+				  <input type="button" class="btn btn-default" id="queryBtn" value="查询">
 				  
 				</form>
 			</div>
@@ -254,7 +337,7 @@
 							<td>结束日期</td>
 						</tr>
 					</thead>
-					<tbody>
+					<tbody id="activityBody">
 						<tr class="active">
 							<td><input type="checkbox" /></td>
 							<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href='detail.html';">发传单</a></td>
@@ -274,38 +357,7 @@
 			</div>
 			
 			<div style="height: 50px; position: relative;top: 30px;">
-				<div>
-					<button type="button" class="btn btn-default" style="cursor: default;">共<b>50</b>条记录</button>
-				</div>
-				<div class="btn-group" style="position: relative;top: -34px; left: 110px;">
-					<button type="button" class="btn btn-default" style="cursor: default;">显示</button>
-					<div class="btn-group">
-						<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-							10
-							<span class="caret"></span>
-						</button>
-						<ul class="dropdown-menu" role="menu">
-							<li><a href="#">20</a></li>
-							<li><a href="#">30</a></li>
-						</ul>
-					</div>
-					<button type="button" class="btn btn-default" style="cursor: default;">条/页</button>
-				</div>
-				<div style="position: relative;top: -88px; left: 285px;">
-					<nav>
-						<ul class="pagination">
-							<li class="disabled"><a href="#">首页</a></li>
-							<li class="disabled"><a href="#">上一页</a></li>
-							<li class="active"><a href="#">1</a></li>
-							<li><a href="#">2</a></li>
-							<li><a href="#">3</a></li>
-							<li><a href="#">4</a></li>
-							<li><a href="#">5</a></li>
-							<li><a href="#">下一页</a></li>
-							<li class="disabled"><a href="#">末页</a></li>
-						</ul>
-					</nav>
-				</div>
+				<div id="activityPage"></div>
 			</div>
 			
 		</div>

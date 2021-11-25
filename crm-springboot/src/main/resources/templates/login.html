@@ -28,11 +28,11 @@
 	function login() {
 		var loginAct = $("#loginAct").val();
 		var loginPwd = $("#loginPwd").val();
-		if(!verifyNouNull(loginAct)){
+		if(!verifyNotNull(loginAct)){
 			$("#msg").html("用户名不能为空");
 			return;
 		}
-		if(!verifyNouNull(loginPwd)){
+		if(!verifyNotNull(loginPwd)){
 			$("#msg").html("密码不能为空");
 			return;
 		}
