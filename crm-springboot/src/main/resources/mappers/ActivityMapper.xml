@@ -38,6 +38,21 @@
     order by a.create_time desc
   </select>
 
+  <!-- 将owner转成user的name，createBy也转成name，editBy转成name -->
+  <select id="selectByIdToName" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+      a.id,u.name as owner,a.name,a.start_date,a.end_date,a.cost,a.description,a.create_by,a.create_time,a.edit_by,a.edit_time
+      from
+          (select
+              a.id,a.owner,a.name,a.start_date,a.end_date,a.cost,a.description,u.name as create_by,a.create_time,a.edit_by,a.edit_time
+                  from
+                      (select
+                          a.id,a.owner,a.name,a.start_date,a.end_date,a.cost,a.description,a.create_by,a.create_time,u.name as edit_by,a.edit_time
+                          from tbl_activity a LEFT JOIN tbl_user u on a.edit_by = u.id) a ,tbl_user u
+                  where a.create_by = u.id) a, tbl_user u
+      where a.owner = u.id and a.id = #{id}
+  </select>
+
   <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
     select 
     <include refid="Base_Column_List" />

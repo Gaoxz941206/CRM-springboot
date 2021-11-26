@@ -19,4 +19,6 @@ public interface ActivityMapper {
     int updateByPrimaryKey(Activity record);
 
     List<Activity> selectAllByPage(ActivityPage activityPage);
+
+    Activity selectByIdToName(String id);
 }

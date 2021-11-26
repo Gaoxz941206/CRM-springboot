@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.Map;
 
 /**
  * @Author Gaoxz
@@ -44,7 +46,22 @@ public class ActivityController {
     //跳转至详情页
     @RequestMapping("/to/detail/{id}")
     public String toDetail(@PathVariable("id") String id, Model model){
-        model.addAttribute("act",activityService.selectById(id));
+        model.addAttribute("act",activityService.selectByIdToName(id));
         return "workbench/activity/detail";
+    }
+
+    //跳转至修改页
+    @RequestMapping("/to/update")
+    @ResponseBody
+    public Map<Object, Object> toUpdate(String id){
+        return activityService.toEdit(id);
+    }
+
+    //跳转至修改页
+    @RequestMapping("/update")
+    @ResponseBody
+    public int update(Activity activity, HttpSession session){
+        String editBy = ((User)session.getAttribute("user")).getId();
+        return activityService.updateActivity(activity,editBy);
     }
 }

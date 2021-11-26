@@ -13,7 +13,9 @@ import com.myself.crm.vo.ActivityPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author Gaoxz
@@ -46,12 +48,28 @@ public class ActivityServiceImpl implements ActivityService {
         return new PageInfo<>(list);
     }
 
-    //根据市场活动id查询
+    //根据市场活动id查询(将owner、createBy、editBy转成姓名)
     @Override
-    public Activity selectById(String id) {
+    public Activity selectByIdToName(String id) {
+        Activity activity = activityMapper.selectByIdToName(id);
+        return activityMapper.selectByIdToName(id);
+    }
+
+    //跳转至修改市场活动页面之前，根据市场活动id查询、查询user列表
+    @Override
+    public Map<Object,Object> toEdit(String id) {
+        Map<Object,Object> map = new HashMap<>();
+        List<User> list = userMapper.selectAll();
         Activity activity = activityMapper.selectByPrimaryKey(id);
-        User user = userMapper.selectByPrimaryKey(activity.getOwner());
-        activity.setOwner(user.getName());
-        return activity;
+        map.put("list",list);
+        map.put("act",activity);
+        return map;
+    }
+
+    @Override
+    public int updateActivity(Activity activity,String editBy) {
+        activity.setEditBy(editBy);
+        activity.setEditTime(DateTimeUtil.CURRENT_TIME());
+        return activityMapper.updateByPrimaryKeySelective(activity);
     }
 }
