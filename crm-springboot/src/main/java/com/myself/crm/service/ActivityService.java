@@ -13,4 +13,6 @@ public interface ActivityService {
     int addActivity(Activity activity, String createBy);
 
     PageInfo<Activity> selectAllByPage(ActivityPage activityPage);
+
+    Activity selectById(String id);
 }

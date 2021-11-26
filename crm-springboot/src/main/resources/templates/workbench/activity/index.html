@@ -51,6 +51,10 @@
 			}
 			pageQuery(pageNum,$("#rows_per_page_activityPage").val());
 		});
+		//弹出修改页面
+		$("#editBtn").click(function () {
+			$("#editActivityModal").modal("show");
+		})
 	});
 
 	//将用户列表添加到创建市场活动模态窗口的下拉项
@@ -62,10 +66,12 @@
 			success:function (resp) {
 				var html = "";
 				$("#create-marketActivityOwner").html(html);
+				$("#edit-marketActivityOwner").html(html);
 				$.each(resp,function (i,n) {
 					html += '<option value="'+n.id+'">'+n.name+'</option>'
 				});
 				$("#create-marketActivityOwner").html(html);
+				$("#edit-marketActivityOwner").html(html);
 				$("#create-marketActivityOwner").val([[${session.user.id}]]);
 			}
 		})
@@ -124,8 +130,8 @@
 				$("#activityBody").html(html);
 				$.each(resp.list,function (i,n) {
 					html += '<tr class="active">';
-					html +=     '<td><input type="checkbox" /></td>';
-					html +=     '<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href=\'detail.html\';">'+n.name+'</a></td>';
+					html +=     '<td><input type="checkbox" value="'+n.id+'" name="choose" onclick="choose()"/></td>';
+					html +=     '<td><a href="javascript:void(0);" style="text-decoration: none; cursor: pointer;" onclick="toActivityDetail(\''+n.id+'\')">'+n.name+'</a></td>';
 					html +=     '<td>'+n.owner+'</td>';
 					html +=     '<td>'+n.startDate+'</td>';
 					html +=     '<td>'+n.endDate+'</td>';
@@ -153,12 +159,39 @@
 						$("#currentPageSize").val(data.rowsPerPage);
 					}
 				});
-
 			}
 		})
+	}
+
+	//跳转至详情页
+	function toActivityDetail(id) {
+		document.location = "/activity/to/detail/"+id;
+	}
+
+	//全选与反选
+	function chooseAll() {
+		var chooses = $("input[name='choose']");
+		for (var i=0;i<chooses.length;i++){
+			chooses[i].checked = $("#chooseAll").prop("checked");
+		}
+	}
+
+	//单个选择
+	function choose() {
+		var choose = $("input[name='choose']");
+		var chose = $("input[name='choose']:checked");
+		if(choose.length === chose.length){
+			$("#chooseAll").prop("checked","checked");
+		}else {
+			$("#chooseAll").prop("checked","");
+		}
+		alert(chose.val());
+	}
+
+	//修改市场活动
+	function toUpdate() {
 
 	}
-	
 </script>
 </head>
 <body>
@@ -284,7 +317,7 @@
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-					<button type="button" class="btn btn-primary" data-dismiss="modal">更新</button>
+					<button id="updateBtn" type="button" class="btn btn-primary" >更新</button>
 				</div>
 			</div>
 		</div>
@@ -338,18 +371,16 @@
 			<div class="btn-toolbar" role="toolbar" style="background-color: #F7F7F7; height: 50px; position: relative;top: 5px;">
 				<div class="btn-group" style="position: relative; top: 18%;">
 				  <button id="createBtn" type="button" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span> 创建</button>
-				  <button type="button" class="btn btn-default" data-toggle="modal" data-target="#editActivityModal"><span class="glyphicon glyphicon-pencil"></span> 修改</button>
+				  <button id="editBtn" type="button" class="btn btn-default"><span class="glyphicon glyphicon-pencil"></span> 修改</button>
 				  <button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-minus"></span> 删除</button>
 				</div>
 				
 			</div>
 			<div style="position: relative;top: 10px;">
-				<input type="hidden" id="currentPageNum">
-				<input type="hidden" id="currentPageSize">
 				<table class="table table-hover">
 					<thead>
 						<tr style="color: #B3B3B3;">
-							<td><input type="checkbox" /></td>
+							<td><input type="checkbox" id="chooseAll" onclick="chooseAll()"/></td>
 							<td>名称</td>
                             <td>所有者</td>
 							<td>开始日期</td>

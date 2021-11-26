@@ -7,6 +7,8 @@ import com.myself.crm.service.ActivityService;
 import com.myself.crm.vo.ActivityPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -24,6 +26,7 @@ public class ActivityController {
     @Autowired(required = false)
     private ActivityService activityService;
 
+    //添加市场活动
     @RequestMapping("/add")
     @ResponseBody
     public Boolean addActivity(Activity activity, HttpSession session){
@@ -31,9 +34,17 @@ public class ActivityController {
         return activityService.addActivity(activity,user.getId()) == 1;
     }
 
+    //条件分页查询
     @RequestMapping("/pageQuery")
     @ResponseBody
     public PageInfo<Activity> pageQuery(ActivityPage activityPage){
         return activityService.selectAllByPage(activityPage);
+    }
+
+    //跳转至详情页
+    @RequestMapping("/to/detail/{id}")
+    public String toDetail(@PathVariable("id") String id, Model model){
+        model.addAttribute("act",activityService.selectById(id));
+        return "workbench/activity/detail";
     }
 }
